@@ -3,6 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import SliceHeader from './SliceHeader';
+import SliceFilter from './SliceFilter';
 import ChartContainer from '../../chart/ChartContainer';
 
 import '../../../stylesheets/dashboard.css';
@@ -26,6 +27,7 @@ const propTypes = {
   toggleExpandSlice: PropTypes.func,
   exploreChart: PropTypes.func,
   exportCSV: PropTypes.func,
+  runQuery: PropTypes.func,
   addFilter: PropTypes.func,
   getFilters: PropTypes.func,
   clearFilter: PropTypes.func,
@@ -41,6 +43,7 @@ const defaultProps = {
   toggleExpandSlice: () => ({}),
   exploreChart: () => ({}),
   exportCSV: () => ({}),
+  runQuery: () => ({}),
   addFilter: () => ({}),
   getFilters: () => ({}),
   clearFilter: () => ({}),
@@ -51,12 +54,21 @@ const defaultProps = {
 class GridCell extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.state = {
+      value: [],
+      filters: [],
+      activeRequest: null,
+    };
 
     const sliceId = this.props.slice.slice_id;
     this.addFilter = this.props.addFilter.bind(this, sliceId);
     this.getFilters = this.props.getFilters.bind(this, sliceId);
     this.clearFilter = this.props.clearFilter.bind(this, sliceId);
     this.removeFilter = this.props.removeFilter.bind(this, sliceId);
+  }
+
+  componentDidMount() {
+    this.state.filters.forEach((filter, index) => this.fetchFilterValues(index));
   }
 
   getDescriptionId(slice) {
@@ -88,6 +100,106 @@ class GridCell extends React.PureComponent {
     return this.refs[headerId] ? this.refs[headerId].offsetHeight : 30;
   }
 
+  fetchFilterValues(index, column) {
+    const datasource = this.props.datasource;
+    const col = column || this.state.value[index].col;
+    const having = false;
+    if (col && this.props.datasource && this.props.datasource.filter_select && !having) {
+      this.setState((prevState) => {
+        const newStateFilters = Object.assign([], prevState.filters);
+        newStateFilters[index].valuesLoading = true;
+        return { filters: newStateFilters };
+      });
+      // if there is an outstanding request to fetch values, cancel it.
+      if (this.state.activeRequest) {
+        this.state.activeRequest.abort();
+      }
+      this.setState({
+        activeRequest: $.ajax({
+          type: 'GET',
+          url: `/superset/filter/${datasource.type}/${datasource.id}/${col}/`,
+          success: (data) => {
+            this.setState((prevState) => {
+              const newStateFilters = Object.assign([], prevState.filters);
+              newStateFilters[index] = { valuesLoading: false, valueChoices: data };
+              return { filters: newStateFilters, activeRequest: null };
+            });
+          },
+        }),
+      });
+    }
+  }
+
+  addSliceFilter() {
+    const newFilters = Object.assign([], this.state.value);
+    const col = this.props.datasource && this.props.datasource.filterable_cols.length > 0 ?
+      this.props.datasource.filterable_cols[0][0] :
+      null;
+    newFilters.push({
+      col,
+      op: 'in',
+      val: this.props.datasource.filter_select ? [] : '',
+    });
+    this.setState({
+      value: Object.assign(this.state.value, newFilters),
+    });
+    const nextIndex = this.state.filters.length;
+    this.setState((prevState) => {
+      const newStateFilters = Object.assign([], prevState.filters);
+      newStateFilters.push({ valuesLoading: false, valueChoices: [] });
+      return { filters: newStateFilters };
+    });
+    this.fetchFilterValues(nextIndex, col);
+  }
+
+  changeSliceFilter(index, control, value) {
+    const newFilters = Object.assign([], this.state.value);
+    const modifiedFilter = Object.assign({}, newFilters[index]);
+    if (typeof control === 'string') {
+      modifiedFilter[control] = value;
+    } else {
+      control.forEach((c, i) => {
+        modifiedFilter[c] = value[i];
+      });
+    }
+    // Clear selected values and refresh upon column change
+    if (control === 'col') {
+      if (modifiedFilter.val.constructor === Array) {
+        modifiedFilter.val = [];
+      } else if (typeof modifiedFilter.val === 'string') {
+        modifiedFilter.val = '';
+      }
+      this.fetchFilterValues(index, value);
+    }
+    newFilters.splice(index, 1, modifiedFilter);
+    this.setState({
+      value: Object.assign(this.state.value, newFilters),
+    });
+    this.setState((prevState) => {
+      const newStateFilters = Object.assign(newFilters, prevState.filters);
+      newStateFilters.push({ valuesLoading: false, valueChoices: [] });
+      return { filters: newStateFilters };
+    });
+    const formData = { ...this.props.slice.formData };
+    const newFormData = Object.assign(formData, { filters: this.state.value });
+    this.props.runQuery(newFormData, true, this.props.timeout, this.props.chartKey);
+  }
+
+  removeSliceFilter(index) {
+    const newValue = this.state.value.filter((f, i) => i !== index);
+    this.setState({
+      value: newValue,
+    });
+    this.setState((prevState) => {
+      const newStateFilters = Object.assign([], prevState.filters);
+      newStateFilters.splice(index, 1);
+      return { filters: newStateFilters };
+    });
+    const formData = { ...this.props.slice.formData };
+    const newFormData = Object.assign(formData, { filters: newValue });
+    this.props.runQuery(newFormData, true, this.props.timeout, this.props.chartKey);
+  }
+
   render() {
     const {
       isExpanded, isLoading, isCached, cachedDttm,
@@ -95,6 +207,19 @@ class GridCell extends React.PureComponent {
       chartKey, slice, datasource, formData, timeout, annotationQuery,
       exploreChart, exportCSV,
     } = this.props;
+    const filters = this.state.value.map((filter, i) => (
+      <div key={i}>
+        <SliceFilter
+          having={false}
+          filter={filter}
+          datasource={this.props.datasource}
+          removeFilter={this.removeSliceFilter.bind(this, i)}
+          changeFilter={this.changeSliceFilter.bind(this, i)}
+          valuesLoading={this.state.filters[i].valuesLoading}
+          valueChoices={this.state.filters[i].valueChoices}
+        />
+      </div>
+    ));
     return (
       <div
         className={isLoading ? 'slice-cell-highlight' : 'slice-cell'}
@@ -109,6 +234,7 @@ class GridCell extends React.PureComponent {
             removeSlice={removeSlice}
             updateSliceName={updateSliceName}
             toggleExpandSlice={toggleExpandSlice}
+            addSliceFilter={this.addSliceFilter.bind(this)}
             forceRefresh={forceRefresh}
             editMode={this.props.editMode}
             annotationQuery={annotationQuery}
@@ -128,6 +254,12 @@ class GridCell extends React.PureComponent {
           ref={this.getDescriptionId(slice)}
           dangerouslySetInnerHTML={{ __html: slice.description_markeddown }}
         />
+        <div
+          className="slice_description bs-callout bs-callout-default"
+          style={this.state.value.length === 0 ? { display: 'none' } : {}}
+        >
+          {filters}
+        </div>
         <div className="row chart-container">
           <input type="hidden" value="false" />
           <ChartContainer

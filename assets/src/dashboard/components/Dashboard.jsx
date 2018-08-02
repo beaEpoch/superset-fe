@@ -332,6 +332,7 @@ class Dashboard extends React.PureComponent {
             exploreChart={this.exploreChart}
             exportCSV={this.exportCSV}
             fetchSlice={this.fetchSlice}
+            runQuery={this.props.actions.runQuery}
             saveSlice={this.props.actions.saveSlice}
             removeSlice={this.props.actions.removeSlice}
             removeChart={this.props.actions.removeChart}

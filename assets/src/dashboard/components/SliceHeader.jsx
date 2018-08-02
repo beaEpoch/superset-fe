@@ -17,6 +17,7 @@ const propTypes = {
   forceRefresh: PropTypes.func,
   exploreChart: PropTypes.func,
   exportCSV: PropTypes.func,
+  addSliceFilter: PropTypes.func,
   editMode: PropTypes.bool,
   annotationQuery: PropTypes.object,
   annotationError: PropTypes.object,
@@ -29,6 +30,7 @@ const defaultProps = {
   toggleExpandSlice: () => ({}),
   exploreChart: () => ({}),
   exportCSV: () => ({}),
+  addSliceFilter: () => ({}),
   editMode: false,
 };
 
@@ -113,6 +115,15 @@ class SliceHeader extends React.PureComponent {
                   tooltip={refreshTooltip}
                 >
                   <i className="fa fa-repeat" />
+                </TooltipWrapper>
+              </a>
+              <a onClick={this.props.addSliceFilter}>
+                <TooltipWrapper
+                  placement="top"
+                  label="Filter"
+                  tooltip={t('Add Filter')}
+                >
+                  <i className="fa fa-filter" />
                 </TooltipWrapper>
               </a>
               {slice.description &&

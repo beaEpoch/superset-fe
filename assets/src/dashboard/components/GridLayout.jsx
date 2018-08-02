@@ -20,6 +20,7 @@ const propTypes = {
   exploreChart: PropTypes.func,
   exportCSV: PropTypes.func,
   fetchSlice: PropTypes.func,
+  runQuery: PropTypes.func,
   saveSlice: PropTypes.func,
   removeSlice: PropTypes.func,
   removeChart: PropTypes.func,
@@ -38,6 +39,7 @@ const defaultProps = {
   exploreChart: () => ({}),
   exportCSV: () => ({}),
   fetchSlice: () => ({}),
+  runQuery: () => ({}),
   saveSlice: () => ({}),
   removeSlice: () => ({}),
   removeChart: () => ({}),
@@ -159,6 +161,7 @@ class GridLayout extends React.Component {
             isCached={queryResponse.is_cached}
             cachedDttm={queryResponse.cached_dttm}
             toggleExpandSlice={this.props.toggleExpandSlice}
+            runQuery={this.props.runQuery}
             forceRefresh={this.forceRefresh}
             removeSlice={this.removeSlice}
             updateSliceName={this.updateSliceName}
