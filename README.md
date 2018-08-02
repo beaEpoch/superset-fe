@@ -1,6 +1,10 @@
 # superset-fe
 incubator-superset 项目前端
 
+### 版本
+incubator-superset
+Releases: 0.25.0rc1
+
 ### 功能
 支持 dashboard 中单个图表的过滤功能（原生只能使用 filter box 进行全局过滤）
 
