@@ -54,9 +54,14 @@ const defaultProps = {
 class GridCell extends React.PureComponent {
   constructor(props) {
     super(props);
+    const initFilters = props.slice.formData.filters.map(() => ({
+      valuesLoading: false,
+      valueChoices: [],
+    }));
+
     this.state = {
-      value: [],
-      filters: [],
+      value: props.slice.formData.filters,
+      filters: initFilters,
       activeRequest: null,
     };
 
