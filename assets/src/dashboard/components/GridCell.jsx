@@ -75,6 +75,10 @@ class GridCell extends React.PureComponent {
     return 'description_' + slice.slice_id;
   }
 
+  getFiltersId(slice) {
+    return 'filters_' + slice.slice_id;
+  }
+
   getHeaderId(slice) {
     return 'header_' + slice.slice_id;
   }
@@ -87,12 +91,17 @@ class GridCell extends React.PureComponent {
     const widgetHeight = this.props.widgetHeight;
     const headerHeight = this.headerHeight(slice);
     const descriptionId = this.getDescriptionId(slice);
+    const filtersId = this.getFiltersId(slice);
     let descriptionHeight = 0;
+    let filtersHeight = 0;
     if (this.props.isExpanded && this.refs[descriptionId]) {
       descriptionHeight = this.refs[descriptionId].offsetHeight + 10;
     }
+    if (this.state.value.length !== 0 && this.refs[filtersId]) {
+      filtersHeight = this.refs[filtersId].offsetHeight + 10;
+    }
 
-    return widgetHeight - headerHeight - descriptionHeight;
+    return widgetHeight - headerHeight - descriptionHeight - filtersHeight;
   }
 
   headerHeight(slice) {
@@ -177,12 +186,11 @@ class GridCell extends React.PureComponent {
     });
     this.setState((prevState) => {
       const newStateFilters = Object.assign(newFilters, prevState.filters);
-      newStateFilters.push({ valuesLoading: false, valueChoices: [] });
       return { filters: newStateFilters };
     });
     const formData = { ...this.props.slice.formData };
     const newFormData = Object.assign(formData, { filters: this.state.value });
-    this.props.runQuery(newFormData, true, this.props.timeout, this.props.chartKey);
+    this.props.runQuery(newFormData, false, this.props.timeout, this.props.chartKey);
   }
 
   removeSliceFilter(index) {
@@ -197,7 +205,7 @@ class GridCell extends React.PureComponent {
     });
     const formData = { ...this.props.slice.formData };
     const newFormData = Object.assign(formData, { filters: newValue });
-    this.props.runQuery(newFormData, true, this.props.timeout, this.props.chartKey);
+    this.props.runQuery(newFormData, false, this.props.timeout, this.props.chartKey);
   }
 
   render() {
@@ -257,6 +265,7 @@ class GridCell extends React.PureComponent {
         <div
           className="slice_description bs-callout bs-callout-default"
           style={this.state.value.length === 0 ? { display: 'none' } : {}}
+          ref={this.getFiltersId(slice)}
         >
           {filters}
         </div>

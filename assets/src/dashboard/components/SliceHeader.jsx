@@ -121,7 +121,7 @@ class SliceHeader extends React.PureComponent {
                 <TooltipWrapper
                   placement="top"
                   label="Filter"
-                  tooltip={t('Add Filter')}
+                  tooltip={t('Add filter')}
                 >
                   <i className="fa fa-filter" />
                 </TooltipWrapper>
