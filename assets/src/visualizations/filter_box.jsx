@@ -108,7 +108,7 @@ class FilterBox extends React.Component {
     if (this.props.showDateFilter) {
       dateFilter = (
         <div className="row space-1">
-          <div className="col-lg-6 col-xs-12">
+          <div className="col-lg-6 col-xs-6">
             <DateFilterControl
               name={since}
               label={t('Since')}
@@ -117,7 +117,7 @@ class FilterBox extends React.Component {
               value={this.state.selectedValues[since]}
             />
           </div>
-          <div className="col-lg-6 col-xs-12">
+          <div className="col-lg-6 col-xs-6">
             <DateFilterControl
               name={until}
               label={t('Until')}

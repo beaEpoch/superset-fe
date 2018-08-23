@@ -1,6 +1,7 @@
 /* eslint-disable react/no-danger */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Row, Col } from 'react-bootstrap';
 
 import SliceHeader from './SliceHeader';
 import SliceFilter from './SliceFilter';
@@ -221,17 +222,18 @@ class GridCell extends React.PureComponent {
       exploreChart, exportCSV,
     } = this.props;
     const filters = this.state.value.map((filter, i) => (
-      <div key={i}>
+      <Col style={{ height: '31px' }} md={6} key={i}>
         <SliceFilter
           having={false}
           filter={filter}
           datasource={this.props.datasource}
+          editMode={this.props.editMode}
           removeFilter={this.removeSliceFilter.bind(this, i)}
           changeFilter={this.changeSliceFilter.bind(this, i)}
           valuesLoading={this.state.filters[i].valuesLoading}
           valueChoices={this.state.filters[i].valueChoices}
         />
-      </div>
+      </Col>
     ));
     return (
       <div
@@ -272,7 +274,9 @@ class GridCell extends React.PureComponent {
           style={this.state.value.length === 0 ? { display: 'none' } : {}}
           ref={this.getFiltersId(slice)}
         >
-          {filters}
+          <Row>
+            {filters}
+          </Row>
         </div>
         <div className="row chart-container">
           <input type="hidden" value="false" />

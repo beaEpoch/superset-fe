@@ -29,6 +29,7 @@ const propTypes = {
   removeFilter: PropTypes.func,
   filter: PropTypes.object.isRequired,
   datasource: PropTypes.object,
+  editMode: PropTypes.bool,
   having: PropTypes.bool,
   valuesLoading: PropTypes.bool,
   valueChoices: PropTypes.array,
@@ -38,6 +39,7 @@ const defaultProps = {
   changeFilter: () => {},
   removeFilter: () => {},
   datasource: null,
+  editMode: false,
   having: false,
   valuesLoading: false,
   valueChoices: [],
@@ -142,34 +144,50 @@ export default class SliceFilter extends React.Component {
     }
     return (
       <div>
-        <Row className="space-1 slice-filter">
-          <Col md={4}>
-            <Select
-              id="select-col"
-              placeholder={t('Select value')}
-              clearable={false}
-              options={colChoices}
-              value={filter.col}
-              onChange={this.changeColumn.bind(this)}
-            />
-          </Col>
-          <Col md={3}>
-            <Select
-              id="select-op"
-              placeholder={t('Select operator')}
-              options={opsChoices}
-              clearable={false}
-              value={filter.op}
-              onChange={this.changeOp.bind(this)}
-            />
-          </Col>
-          <Col md={4}>
-            {this.renderFilterFormControl(filter)}
-          </Col>
-          <Col md={1}>
-            <a onClick={this.removeFilter.bind(this)}><i className="fa fa-close" /></a>
-          </Col>
-        </Row>
+        {
+          this.props.editMode ?
+            <div>
+              <Row className="space-1 slice-filter">
+                <Col md={4}>
+                  <Select
+                    id="select-col"
+                    placeholder={t('Select value')}
+                    clearable={false}
+                    options={colChoices}
+                    value={filter.col}
+                    onChange={this.changeColumn.bind(this)}
+                  />
+                </Col>
+                <Col md={3}>
+                  <Select
+                    id="select-op"
+                    placeholder={t('Select operator')}
+                    options={opsChoices}
+                    clearable={false}
+                    value={filter.op}
+                    onChange={this.changeOp.bind(this)}
+                  />
+                </Col>
+                <Col md={4}>
+                  {this.renderFilterFormControl(filter)}
+                </Col>
+                <Col md={1}>
+                  <a onClick={this.removeFilter.bind(this)}><i className="fa fa-close" /></a>
+                </Col>
+              </Row>
+            </div>
+            :
+            <div>
+              <Row className="space-1 slice-filter">
+                <Col md={4} style={{ textAlign: 'center' }}>
+                  <label style={{ lineHeight: '30px' }}>{filter.col}:</label>
+                </Col>
+                <Col md={8}>
+                  {this.renderFilterFormControl(filter)}
+                </Col>
+              </Row>
+            </div>
+        }
       </div>
     );
   }

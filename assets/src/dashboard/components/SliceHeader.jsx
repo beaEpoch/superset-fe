@@ -117,15 +117,17 @@ class SliceHeader extends React.PureComponent {
                   <i className="fa fa-repeat" />
                 </TooltipWrapper>
               </a>
-              <a onClick={this.props.addSliceFilter}>
-                <TooltipWrapper
-                  placement="top"
-                  label="Filter"
-                  tooltip={t('Add filter')}
-                >
-                  <i className="fa fa-filter" />
-                </TooltipWrapper>
-              </a>
+              {this.props.editMode &&
+                <a onClick={this.props.addSliceFilter}>
+                  <TooltipWrapper
+                    placement="top"
+                    label="Filter"
+                    tooltip={t('Add filter')}
+                  >
+                    <i className="fa fa-filter" />
+                  </TooltipWrapper>
+                </a>
+              }
               {slice.description &&
               <a onClick={this.onToggleExpandSlice}>
                 <TooltipWrapper
